@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fathir Store Payment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-image: url('https://files.catbox.moe/vuxbgf.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 500px;
+            width: 100%;
+            margin: 50px 0;
+        }
+        
+        .payment-btn {
+            background: linear-gradient(135deg, #000000, #FFD700);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-bottom: 20px;
+        }
+        
+        .payment-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background-image: url('https://files.catbox.moe/gabpdb.jpg');
+            background-size: cover;
+            background-position: center;
+            padding: 30px;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 450px;
+            position: relative;
+            animation: modalFadeIn 0.4s;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            border: 2px solid #FFD700;
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+            margin: 20px 0;
+        }
+        
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            cursor: pointer;
+            color: #FFD700;
+            text-shadow: 0 0 5px black;
+            transition: transform 0.3s;
+            z-index: 1001;
+        }
+        
+        .close-btn:hover {
+            transform: rotate(90deg);
+            color: white;
+        }
+        
+        h2 {
+            color: #FFD700;
+            margin-top: 0;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+        }
+        
+        .payment-method {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            border-left: 4px solid #FFD700;
+            backdrop-filter: blur(5px);
+        }
+        
+        .payment-method h3 {
+            margin-top: 0;
+            color: #FFD700;
+            font-size: 18px;
+        }
+        
+        .payment-method p {
+            margin-bottom: 8px;
+            color: #eee;
+        }
+        
+        .payment-number {
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: rgba(255, 215, 0, 0.2);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .payment-number:hover {
+            background-color: rgba(255, 215, 0, 0.4);
+        }
+        
+        .payment-number:active {
+            transform: scale(0.95);
+        }
+        
+        .payment-number::after {
+            content: 'Klik untuk menyalin';
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            white-space: nowrap;
+        }
+        
+        .payment-number:hover::after {
+            opacity: 1;
+        }
+        
+        .payment-method strong {
+            color: white;
+        }
+        
+        .qr-code {
+            text-align: center;
+            margin: 25px 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .qr-code:hover {
+            transform: translateY(-5px);
+        }
+        
+        .qr-code h3 {
+            color: #FFD700;
+            margin-bottom: 10px;
+        }
+        
+        .qr-code img {
+            max-width: 200px;
+            border: 2px solid #FFD700;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        .notice {
+            background-color: rgba(139, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #FF0000;
+            backdrop-filter: blur(5px);
+        }
+        
+        .notice p {
+            margin: 8px 0;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        /* QR Preview Modal */
+        .qr-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .qr-modal-content {
+            position: relative;
+            text-align: center;
+            animation: qrFadeIn 0.4s;
+            max-width: 100%;
+        }
+        
+        @keyframes qrFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .qr-modal img {
+            max-width: 90vw;
+            max-height: 90vh;
+            border: 3px solid #FFD700;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+        }
+        
+        .close-qr-btn {
+            position: absolute;
+            top: -15px;
+            right: -15px;
+            background-color: #FFD700;
+            color: black;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s;
+            z-index: 2001;
+        }
+        
+        .close-qr-btn:hover {
+            transform: rotate(90deg) scale(1.1);
+        }
+        
+        .copied-notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            z-index: 3000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+        }
+        
+        .copied-notification.show {
+            opacity: 1;
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(#FFD700, #b8860b);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(#FFD700, #daa520);
+        }
+        
+        @media (max-width: 480px) {
+            .modal-content, .qr-modal img {
+                max-width: 95%;
+            }
+            
+            .payment-number::after {
+                bottom: -30px;
+                font-size: 10px;
+                padding: 2px 6px;
+            }
+            
+            .close-btn, .close-qr-btn {
+                font-size: 22px;
+            }
+            
+            .close-qr-btn {
+                top: -10px;
+                right: -10px;
+                width: 35px;
+                height: 35px;
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button id="paymentButton" class="payment-btn">PAYMENT METHODS</button>
+    </div>
+    
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Payment Methods</h2>
+            
+            <div class="payment-method">
+                <h3>DANA</h3>
+                <p><strong>Nama Penerima:</strong> Fathir Store</p>
+                <p><strong>Nomor:</strong> <span class="payment-number" data-number="0882003493812">0882003493812</span></p>
+            </div>
+            
+            <div class="payment-method">
+                <h3>GO-PAY</h3>
+                <p><strong>Nama Penerima:</strong> Fathir Store</p>
+                <p><strong>Nomor:</strong> <span class="payment-number" data-number="08895668901">08895668901</span></p>
+            </div>
+            
+            <div class="payment-method">
+                <h3>OVO</h3>
+                <p><strong>Nama Penerima:</strong> Fathir Store</p>
+                <p><strong>Nomor:</strong> <span class="payment-number" data-number="0882003493812">0882003493812</span></p>
+            </div>
+            
+            <div class="qr-code" id="qrCode">
+                <h3>QRIS</h3>
+                <img src="https://files.catbox.moe/gwkb7r.jpg" alt="QRIS Payment">
+            </div>
+            
+            <div class="notice">
+                <p>ALL TRX DI FATHIR STORE WAJIB BAWAH BUKTI TF</p>
+                <p>JIKA TIDAK ADA BUKTI TF TIDAK DI LAYANI</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- QR Preview Modal -->
+    <div id="qrModal" class="qr-modal">
+        <div class="qr-modal-content">
+            <span class="close-qr-btn">&times;</span>
+            <img src="https://files.catbox.moe/gwkb7r.jpg" alt="QRIS Payment Preview">
+        </div>
+    </div>
+    
+    <!-- Copied Notification -->
+    <div id="copiedNotification" class="copied-notification">
+        Nomor berhasil disalin!
+    </div>
+    
+    <script>
+        // Get elements
+        const paymentButton = document.getElementById('paymentButton');
+        const paymentModal = document.getElementById('paymentModal');
+        const closeBtn = document.querySelector('.close-btn');
+        const qrCode = document.getElementById('qrCode');
+        const qrModal = document.getElementById('qrModal');
+        const closeQrBtn = document.querySelector('.close-qr-btn');
+        const paymentNumbers = document.querySelectorAll('.payment-number');
+        const copiedNotification = document.getElementById('copiedNotification');
+        
+        // Show payment modal when button is clicked
+        paymentButton.addEventListener('click', function() {
+            paymentModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            // Scroll to top of modal
+            paymentModal.scrollTo(0, 0);
+        });
+        
+        // Hide payment modal when close button is clicked
+        closeBtn.addEventListener('click', function() {
+            paymentModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+        
+        // Hide payment modal when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target === paymentModal) {
+                paymentModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        });
+        
+        // Show QR modal when QR code is clicked
+        qrCode.addEventListener('click', function() {
+            qrModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            // Scroll to top of modal
+            qrModal.scrollTo(0, 0);
+        });
+        
+        // Hide QR modal when close button is clicked
+        closeQrBtn.addEventListener('click', function() {
+            qrModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+        
+        // Hide QR modal when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target === qrModal) {
+                qrModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        });
+        
+        // Close modals with ESC key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                if (paymentModal.style.display === 'flex') {
+                    paymentModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+                if (qrModal.style.display === 'flex') {
+                    qrModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+            }
+        });
+        
+        // Copy payment number when clicked
+        paymentNumbers.forEach(number => {
+            number.addEventListener('click', function() {
+                const textToCopy = this.getAttribute('data-number');
+                
+                // Create temporary input element
+                const tempInput = document.createElement('input');
+                tempInput.value = textToCopy;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                
+                // Show notification
+                copiedNotification.classList.add('show');
+                
+                // Hide notification after 2 seconds
+                setTimeout(() => {
+                    copiedNotification.classList.remove('show');
+                }, 2000);
+            });
+        });
+        
+        // Smooth scroll for the page
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
